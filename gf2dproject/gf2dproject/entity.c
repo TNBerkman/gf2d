@@ -106,10 +106,11 @@ void entity_update(Entity* ent)
 {
 	if (!ent)
 		return;
-	
+	/*
 	ent->frame += 0.1;
 	if (ent->frame >= 16)
 		ent->frame = 0;
+	*/
 	vector2d_add(ent->position, ent->position, ent->velocity);
 }
 

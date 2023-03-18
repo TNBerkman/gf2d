@@ -6,7 +6,8 @@
 
 #include "gf2d_sprite.h"
 
-typedef struct Entity_S
+typedef struct Entity Entity;
+struct Entity
 {
 	Bool _inuse;
 	Sprite* sprite;
@@ -14,9 +15,10 @@ typedef struct Entity_S
 	Vector2D position;
 	Vector2D velocity;
 	Vector2D acceleration;
+	Entity* holder;
 
-	void(*think)(struct Entity_S *self);
-}Entity;
+	void(*think)(struct Entity* self);
+};
 
 /**
 * @brief initialize the internal manager for the entity system

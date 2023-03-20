@@ -7,10 +7,12 @@
 
 void init_player(Entity* self, int id, int posX, int posY);
 void ball_think(Entity* self);
+void bat_think(Entity* self);
 void pitcher_think(Entity* self);
 
 
 Entity* ball;
+Entity* bat;
 int inPlay;
 int pitched;
 Entity* first_base;
@@ -37,7 +39,7 @@ int main(int argc, char * argv[])
     Entity* center;
     Entity* right;
     Entity* batter;
-    Entity* bat;
+
     Entity* runner1;
     Entity* runner2;
     Entity* runner3;
@@ -132,11 +134,13 @@ int main(int argc, char * argv[])
         bat->holder = batter;
         bat->position.x = bat->holder->position.x + 5;
         bat->position.y = bat->holder->position.y + 5;
-        
+        bat->think = bat_think;
     }
     ball = entity_new();
     if (ball)
     {
+        inPlay = 0;
+        pitched = 0;
         ball->sprite = gf2d_sprite_load_image("images/baseball.png");
         ball->holder = pitcher;
         ball->position.x = ball->holder->position.x;
@@ -182,6 +186,43 @@ int main(int argc, char * argv[])
     if (my < self->position.y)self->velocity.y = -0.1;
     if (my > self->position.y)self->velocity.y = 0.1;
 */
+
+void batter_think(Entity* self)
+{
+    if (!self)return;
+
+    if (keys[SDL_SCANCODE_LEFT]) self->velocity.x = -.1;
+    else if (keys[SDL_SCANCODE_RIGHT]) self->velocity.x = .1;
+    else self->velocity.x = 0;
+    if (keys[SDL_SCANCODE_UP]) self->velocity.y = -.1;
+    else if (keys[SDL_SCANCODE_DOWN]) self->velocity.y = .1;
+    else self->velocity.y = 0;
+
+    if (inPlay) // you hit it, run
+    {
+
+    }
+    else if (pitched)
+    {
+        //swings count
+        if (keys[SDL_SCANCODE_RSHIFT])//swing button pressed
+        {
+            int ydiff = self->position.y - ball->position.y;
+            int xdiff = (self->position.x + 10) - ball->position.x;
+            if ((ydiff < 5 && ydiff > -5) && (xdiff < 5 && xdiff > -5))
+            {
+                ball->velocity.y = -5;
+                inPlay = 1;
+            }
+            
+        }
+        
+    }
+    else
+    {
+        //swings dont count
+    }
+}
 
 void pitcher_think(Entity* self)
 {
@@ -407,12 +448,17 @@ void ball_think(Entity* self)
     if (!self)return;
     if (inPlay) // ball is in play
     {
-
+        if (self->position.y < 0)
+        {
+            pitched = 0;
+            inPlay = 0;
+        }
     }
     else if (pitched) // ball is not in play but must move towards home
     {
         if (self->position.y > 602)
         {
+            ball->velocity.y = 0;
             pitched = 0;
         }
     }
@@ -427,7 +473,8 @@ void ball_think(Entity* self)
 void bat_think(Entity* self)
 {
     if (!self)return;
-    self->position = self->holder->position;
+    self->position.x = self->holder->position.x + 5;
+    self->position.y = self->holder->position.y + 5;
 }
 
 void init_player(Entity* self, int id, int posX, int posY)
@@ -444,6 +491,9 @@ void init_player(Entity* self, int id, int posX, int posY)
     //self->think = think_function;
     switch (id)
     {
+        case 0:
+            self->think = batter_think;
+            break;
         case 1:
             self->think = pitcher_think;
             break;

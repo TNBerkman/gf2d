@@ -16,6 +16,7 @@ struct Entity
 	Vector2D velocity;
 	Vector2D acceleration;
 	Entity* holder;
+	int controlled;
 
 	void(*think)(struct Entity* self);
 };

@@ -15,16 +15,30 @@ Entity* ball;
 Entity* bat;
 int inPlay;
 int pitched;
+int sfb;
+int scurve;
+int balls;
+int strikes;
+int outs;
+int swung;
+int umpire;
 Entity* first_base;
 Entity* second_base;
 Entity* third_base;
 Entity* home_plate;
+Entity* strike1;
+Entity* strike2;
+Entity* ball1;
+Entity* ball2;
+Entity* ball3;
 const Uint8* keys;
 
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
     int done = 0;
+    sfb = 1;
+    scurve = 1;
 
     Sprite *background;
 
@@ -43,6 +57,15 @@ int main(int argc, char * argv[])
     Entity* runner1;
     Entity* runner2;
     Entity* runner3;
+
+    Entity* strike1;
+    Entity* strike2;
+    Entity* ball1;
+    Entity* ball2;
+    Entity* ball3;
+    Entity* out1;
+    Entity* out2;
+
     /*
     int mx,my;
     float mf = 0;
@@ -97,6 +120,30 @@ int main(int argc, char * argv[])
         third_base->position.x = 240;
         third_base->position.y = 475;
     }
+    
+    out1 = entity_new();
+    out1->position.x = 0;
+    out1->position.y = 685;
+    out2 = entity_new();
+    out2->position.x = 15;
+    out2->position.y = 685;
+
+    ball1 = entity_new();
+    ball1->position.x = 0;
+    ball1->position.y = 670;
+    ball2 = entity_new();
+    ball2->position.x = 15;
+    ball2->position.y = 670;
+    ball3 = entity_new();
+    ball3->position.x = 30;
+    ball3->position.y = 670;
+
+    strike1 = entity_new();
+    strike1->position.x = 0;
+    strike1->position.y = 655;
+    strike2 = entity_new();
+    strike2->position.x = 15;
+    strike2->position.y = 655;
 
     // create players
     pitcher = entity_new();
@@ -158,8 +205,66 @@ int main(int argc, char * argv[])
         entity_think_all();
         //show all entity updates
         entity_update_all();
+        
+        switch (strikes)
+        {
+            case 0:
+                strike1->sprite = gf2d_sprite_load_image("images/empty.png");
+                strike2->sprite = gf2d_sprite_load_image("images/empty.png");
+                break;
+            case 1:
+                strike1->sprite = gf2d_sprite_load_image("images/strike.png");
+                break;
+            case 2:
+                strike2->sprite = gf2d_sprite_load_image("images/strike.png");
+                break;
+            case 3:
+                outs = outs + 1;
+                strikes = 0;
+                balls = 0;
+                break;
+        }
+        
+        switch (balls)
+        {
+            case 0:
+                ball1->sprite = gf2d_sprite_load_image("images/empty.png");
+                ball2->sprite = gf2d_sprite_load_image("images/empty.png");
+                ball3->sprite = gf2d_sprite_load_image("images/empty.png");
+                break;
+            case 1:
+                ball1->sprite = gf2d_sprite_load_image("images/ball.png");
+                break;
+            case 2:
+                ball2->sprite = gf2d_sprite_load_image("images/ball.png");
+                break;
+            case 3:
+                ball3->sprite = gf2d_sprite_load_image("images/ball.png");
+                break;
+            case 4:
+                strikes = 0;
+                balls = 0;
+                break;
+        }
 
-
+        switch (outs)
+        {
+            case 0:
+                out1->sprite = gf2d_sprite_load_image("images/empty.png");
+                out2->sprite = gf2d_sprite_load_image("images/empty.png");
+                break;
+            case 1:
+                out1->sprite = gf2d_sprite_load_image("images/out.png");
+                break;
+            case 2:
+                out2->sprite = gf2d_sprite_load_image("images/out.png");
+                break;
+            case 3:
+                outs = 0;
+                strikes = 0;
+                balls = 0;
+                break;
+        }
         
         gf2d_graphics_clear_screen();// clears drawing buffers
         
@@ -205,14 +310,22 @@ void batter_think(Entity* self)
     else if (pitched)
     {
         //swings count
-        if (keys[SDL_SCANCODE_RSHIFT])//swing button pressed
+        if (keys[SDL_SCANCODE_RSHIFT] && !swung)//swing button pressed
         {
             int ydiff = self->position.y - ball->position.y;
             int xdiff = (self->position.x + 10) - ball->position.x;
             if ((ydiff < 5 && ydiff > -5) && (xdiff < 5 && xdiff > -5))
             {
-                ball->velocity.y = -5;
+                ball->velocity.y = (ball->velocity.y * -1);
+                ball->velocity.x = 0;
+                ball->acceleration.x = 0;
+                ball->acceleration.y = 0;
                 inPlay = 1;
+            }
+            else
+            {
+                strikes = strikes + 1;
+                swung = 1;
             }
             
         }
@@ -242,9 +355,43 @@ void pitcher_think(Entity* self)
             else self->velocity.x = 0;
             
             //pitches
-            if (keys[SDL_SCANCODE_1])
+            if (keys[SDL_SCANCODE_1])//fastball
             { 
+                ball->velocity.y = 1.5;
+                pitched = 1;
+            }
+            else if (keys[SDL_SCANCODE_2])//l curve
+            {
                 ball->velocity.y = 1;
+                ball->acceleration.x = -.0007;
+                pitched = 1;
+            }
+            else if (keys[SDL_SCANCODE_3])//r curve
+            {
+                ball->velocity.y = 1;
+                ball->acceleration.x = .0007;
+                pitched = 1;
+            }
+            else if (keys[SDL_SCANCODE_4] && sfb)//S FASTBALL
+            {
+                ball->velocity.y = 3;
+                sfb = 0;
+                pitched = 1;
+            }
+            else if (keys[SDL_SCANCODE_Q] && scurve)//S curve l
+            {
+                ball->velocity.y = 2;
+                ball->velocity.x = .5;
+                ball->acceleration.x = -.03;
+                scurve = 0;
+                pitched = 1;
+            }
+            else if (keys[SDL_SCANCODE_E] && scurve)//S curve r
+            {
+                ball->velocity.y = 2;
+                ball->velocity.x = -.5;
+                ball->acceleration.x = .03;
+                scurve = 0;
                 pitched = 1;
             }
         }
@@ -450,16 +597,44 @@ void ball_think(Entity* self)
     {
         if (self->position.y < 0)
         {
+            ball->velocity.x = 0;
+            ball->velocity.y = 0;
+            ball->acceleration.x = 0;
+            ball->acceleration.y = 0;
             pitched = 0;
             inPlay = 0;
         }
     }
     else if (pitched) // ball is not in play but must move towards home
     {
-        if (self->position.y > 602)
+        if (self->position.y == home_plate->position.y) 
         {
+            umpire = self->position.x;
+        }   
+
+        if (self->position.y > 602) // reached catcher
+        {
+            ball->velocity.x = 0;
             ball->velocity.y = 0;
+            ball->acceleration.x = 0;
+            ball->acceleration.y = 0;
+            //determine ball/strike
+            if (!swung)//if caught looking (swinging strike determined in 
+            {
+                if (umpire < home_plate->position.x - 4 || umpire > home_plate->position.x + 8)
+                {
+                    balls = balls + 1;
+                    slog("Ball");
+                }
+                else
+                {
+                    strikes = strikes + 1;
+                    slog("Strike");
+                }
+            }
+            swung = 0;
             pitched = 0;
+
         }
     }
     else // between plays

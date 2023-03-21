@@ -112,6 +112,7 @@ void entity_update(Entity* ent)
 		ent->frame = 0;
 	*/
 	vector2d_add(ent->position, ent->position, ent->velocity);
+	vector2d_add(ent->velocity, ent->velocity, ent->acceleration);
 }
 
 void entity_update_all()

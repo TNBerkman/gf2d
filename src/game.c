@@ -10,13 +10,14 @@ void ball_think(Entity* self);
 void bat_think(Entity* self);
 void pitcher_think(Entity* self);
 
-
 Entity* ball;
 Entity* bat;
 int inPlay;
 int pitched;
 int sfb;
 int scurve;
+int pswing;
+int cswing;
 int balls;
 int strikes;
 int outs;
@@ -39,6 +40,8 @@ int main(int argc, char * argv[])
     int done = 0;
     sfb = 1;
     scurve = 1;
+    pswing = 1;
+    cswing = 1;
 
     Sprite *background;
 
@@ -327,7 +330,43 @@ void batter_think(Entity* self)
                 strikes = strikes + 1;
                 swung = 1;
             }
-            
+        }
+        else if (keys[SDL_SCANCODE_RCTRL] && !swung && pswing)
+        {
+            pswing = 0;
+            int ydiff = self->position.y - ball->position.y;
+            int xdiff = (self->position.x + 10) - ball->position.x;
+            if ((ydiff < 5 && ydiff > -5) && (xdiff < 5 && xdiff > -5))
+            {
+                ball->velocity.y = (ball->velocity.y * -2);
+                ball->velocity.x = 0;
+                ball->acceleration.x = 0;
+                ball->acceleration.y = 0;
+                inPlay = 1;
+            }
+            else
+            {
+                strikes = strikes + 1;
+                swung = 1;
+            }
+        }
+        else if (keys[SDL_SCANCODE_SLASH] && !swung && cswing)
+        {
+            cswing = 0;
+            int ydiff = self->position.y - ball->position.y;
+            if ((ydiff < 5 && ydiff > -5))
+            {
+                ball->velocity.y = (ball->velocity.y * -1);
+                ball->velocity.x = 0;
+                ball->acceleration.x = 0;
+                ball->acceleration.y = 0;
+                inPlay = 1;
+            }
+            else
+            {
+                strikes = strikes + 1;
+                swung = 1;
+            }
         }
         
     }
@@ -649,7 +688,20 @@ void bat_think(Entity* self)
 {
     if (!self)return;
     self->position.x = self->holder->position.x + 5;
-    self->position.y = self->holder->position.y + 5;
+    
+    if (keys[SDL_SCANCODE_RSHIFT] || keys[SDL_SCANCODE_RCTRL])
+    {
+        self->velocity.y = -.5;
+    }
+    else
+    {
+        self->position.y = self->holder->position.y + 5;
+    }
+    if (self->position.y < self->holder->position.y)
+    {
+        self->velocity.y = 0;
+        self->position.y = self->holder->position.y + 5;
+    }
 }
 
 void init_player(Entity* self, int id, int posX, int posY)

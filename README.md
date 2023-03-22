@@ -21,6 +21,10 @@ Arrow Keys - Move batter
 
 RSHIFT - Swing
 
+RCTRL - Power Swing
+
+/ - Contact Swing
+
 ## Common Deliverables
 - [x] Functioning Entity System
 - [ ] Fully interact-able environment
@@ -30,7 +34,7 @@ RSHIFT - Swing
 
 ## Personal Deliverables
 - [x] Batting/pitching mechanics
-- [ ] 5 power-ups
+- [x] 5 power-ups
 - [ ] 5 persistent stats for players
 - [ ] Running bases mechanic
 - [ ] Outfield Gameplay
